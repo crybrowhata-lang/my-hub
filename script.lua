@@ -1,4 +1,4 @@
--- Charli_Skrippt | Fling Things & People | FINAL XENO EDITION (Claw Font & Fix)
+-- Charli_Skrippt | Fling Things & People | FINAL XENO EDITION (Better Intro & Grab Check)
 -- Вставь в Xeno → Execute
 
 local Players = game:GetService("Players")
@@ -34,6 +34,8 @@ local aimbotEnabled = false
 local espEnabled = false
 local antiGrabEnabled = false
 local grabAuraEnabled = false
+local noclipEnabled = false
+local infJumpEnabled = false
 local showNames = true
 local showSkeleton = true
 local aimDistance = 300
@@ -54,11 +56,11 @@ blur.Size = 0
 blur.Parent = Lighting
 
 local loadSound = Instance.new("Sound")
-loadSound.SoundId = "rbxassetid://5153763872"
+loadSound.SoundId = "rbxassetid://5153763872" 
 loadSound.Volume = 0.5
 loadSound.Parent = SoundService
 
--- ==================== 2. ИНТРО (ЗАСТАВКА) ====================
+-- ==================== 2. КИНЕМАТОГРАФИЧНОЕ ИНТРО ====================
 local introGui = Instance.new("ScreenGui")
 introGui.Name = "Charli_IntroGui"
 introGui.IgnoreGuiInset = true
@@ -71,48 +73,72 @@ introBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 introBg.BackgroundTransparency = 1
 introBg.Parent = introGui
 
--- Стилизованный логотип (ТЕКСТ ОТДЕЛЬНО)
+-- Контейнер для логотипа
+local logoContainer = Instance.new("Frame")
+logoContainer.Size = UDim2.new(0, 400, 0, 150)
+logoContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
+logoContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+logoContainer.BackgroundTransparency = 1
+logoContainer.Parent = introBg
+
+-- Стилизованный логотип (ТЕКСТ)
 local logo = Instance.new("TextLabel")
-logo.Size = UDim2.new(0, 400, 0, 100)
-logo.Position = UDim2.new(0.5, 0, 0.5, 0) -- В центре
-logo.AnchorPoint = Vector2.new(0.5, 0.5)
+logo.Size = UDim2.new(1, 0, 1, 0)
 logo.BackgroundTransparency = 1
-logo.Text = "🔱 C T" -- Лапка + Текст
+logo.Text = "🔱 C T" 
 logo.TextColor3 = Color3.fromRGB(255, 255, 0)
 logo.TextTransparency = 1
-logo.Font = Enum.Font.Creepster -- Шрифт "процарапанный когтями"
-logo.TextSize = 80
-logo.Parent = introBg
+logo.Font = Enum.Font.Creepster 
+logo.TextSize = 90
+logo.Parent = logoContainer
 
--- Обводка для эффекта царапин (кроваво-красная)
+-- Обводка для эффекта царапин
 local logoStroke = Instance.new("UIStroke", logo)
 logoStroke.Color = Color3.fromRGB(255, 255, 0)
-logoStroke.Thickness = 3
+logoStroke.Thickness = 4
 logoStroke.Transparency = 1
 
--- Градиент, чтобы буквы были желто-золотыми
-local logoGradient = Instance.new("UIGradient", logo)
-logoGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, THEME.Accent),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 0))
-})
+-- Эффект пульсации (Glow)
+local logoScale = Instance.new("UIScale")
+logoScale.Parent = logo
+logoScale.Scale = 1
 
--- Полоса загрузки (ОТДЕЛЬНО ОТ ТЕКСТА)
+-- Полоса загрузки
 local loadBg = Instance.new("Frame")
-loadBg.Size = UDim2.new(0, 0, 0, 3) -- Изначально нулевая
-loadBg.Position = UDim2.new(0.5, 0, 0.5, 0) -- Появляется ровно там, где был текст
+loadBg.Size = UDim2.new(0, 0, 0, 4) 
+loadBg.Position = UDim2.new(0.5, 0, 0.65, 0) 
 loadBg.AnchorPoint = Vector2.new(0.5, 0.5)
 loadBg.BackgroundColor3 = THEME.Secondary
 loadBg.BackgroundTransparency = 1
-loadBg.Parent = introBg
-Instance.new("UICorner", loadBg).CornerRadius = UDim.new(0, 2)
+loadBg.Parent = logoContainer
+Instance.new("UICorner", loadBg).CornerRadius = UDim.new(1, 0)
 
 local loadFill = Instance.new("Frame")
 loadFill.Size = UDim2.new(0, 0, 1, 0)
-loadFill.BackgroundColor3 = THEME.Accent
+loadFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
 loadFill.BorderSizePixel = 0
 loadFill.Parent = loadBg
-Instance.new("UICorner", loadFill).CornerRadius = UDim.new(0, 2)
+Instance.new("UICorner", loadFill).CornerRadius = UDim.new(1, 0)
+
+-- Текст процентов загрузки
+local percentText = Instance.new("TextLabel")
+percentText.Size = UDim2.new(0, 100, 0, 20)
+percentText.Position = UDim2.new(0.5, 0, 0.75, 0)
+percentText.AnchorPoint = Vector2.new(0.5, 0.5)
+percentText.BackgroundTransparency = 1
+percentText.Text = "0%"
+percentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+percentText.TextTransparency = 1
+percentText.Font = Enum.Font.GothamBold
+percentText.TextSize = 14
+percentText.Parent = logoContainer
+
+-- Вспышка
+local flashFrame = Instance.new("Frame")
+flashFrame.Size = UDim2.new(1, 0, 1, 0)
+flashFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+flashFrame.BackgroundTransparency = 1
+flashFrame.Parent = introBg
 
 -- ==================== 3. ГЛАВНОЕ МЕНЮ ====================
 local gui = Instance.new("ScreenGui")
@@ -210,7 +236,6 @@ statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 statusLabel.Parent = main
 statusLabel.LayoutOrder = 2
 
--- Сворачивание
 minBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     minBtn.Text = isMinimized and "+" or "-"
@@ -221,7 +246,7 @@ minBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==== АНИМИРОВАННАЯ СЕКЦИЯ ====
+-- ==== ХЕЛПЕРЫ МЕНЮ ====
 local function createExpandableSection(text, defaultState, callback, order)
     local sectionFrame = Instance.new("Frame")
     sectionFrame.Size = UDim2.new(1, 0, 0, 30)
@@ -291,7 +316,6 @@ local function createExpandableSection(text, defaultState, callback, order)
     return settingsContainer
 end
 
--- ==== ХЕЛПЕР ПОЛЗУНКА ====
 local function createSlider(parent, text, minVal, maxVal, defaultVal, callback, isFloat)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 40)
@@ -359,7 +383,7 @@ local function createSlider(parent, text, minVal, maxVal, defaultVal, callback, 
     end)
 end
 
--- ==================== СЕКЦИИ ====================
+-- ==================== СЕКЦИИ МЕНЮ ====================
 local aimSettings = createExpandableSection("Enable Aimbot", false, function(state) aimbotEnabled = state end, 3)
 createSlider(aimSettings, "Aim Distance (Studs)", 50, 1000, aimDistance, function(val) aimDistance = val end)
 createSlider(aimSettings, "Aim FOV (Pixels)", 50, 500, aimFov, function(val) aimFov = val end)
@@ -521,12 +545,15 @@ refreshPlayerList()
 Players.PlayerAdded:Connect(function() task.wait(1) refreshPlayerList() end)
 Players.PlayerRemoving:Connect(function(player) selectedPlayers[player] = nil; refreshPlayerList() end)
 
--- ==================== ДЕТЕКТОР ЗАХВАТА ====================
-local function isGrabbing()
+-- ==================== УМНЫЙ ДЕТЕКТОР ЗАХВАТА (Я СХВАТИЛ / МЕНЯ СХВАТИЛИ) ====================
+local function isInvolvedInGrab()
     local char = LocalPlayer.Character
     if not char then return false, "" end
+
+    -- 1. Проверка на наличие инструмента в руках
     if char:FindFirstChildOfClass("Tool") then return true, "Tool" end
 
+    -- 2. Проверка моих анимаций
     local hum = char:FindFirstChildOfClass("Humanoid")
     if hum then
         local animator = hum:FindFirstChildOfClass("Animator")
@@ -540,16 +567,31 @@ local function isGrabbing()
         end
     end
 
+    -- 3. Проверка МОИХ суставов (Я СХВАТИЛ КОГО-ТО)
     for _, v in pairs(char:GetDescendants()) do
-        if v:IsA("Weld") or v:IsA("WeldConstraint") or v:IsA("Motor6D") or v:IsA("AlignPosition") or v:IsA("AlignOrientation") then
-            local p0 = v.Part0 or v.Attachment0
+        if v:IsA("Weld") or v:IsA("WeldConstraint") or v:IsA("AlignPosition") or v:IsA("AlignOrientation") or v:IsA("Motor6D") then
             local p1 = v.Part1 or v.Attachment1
-            if p0 and p1 then
-                if p1.Parent ~= char and p1.Parent and p1.Parent:FindFirstChild("Humanoid") then return true, "Weld" end
-                if p0.Parent ~= char and p0.Parent and p0.Parent:FindFirstChild("Humanoid") then return true, "Weld" end
+            if p1 and p1.Parent ~= char and p1.Parent and p1.Parent:FindFirstChild("Humanoid") then 
+                return true, "Я схватил" 
             end
         end
     end
+
+    -- 4. Проверка ЧУЖИХ суставов (МЕНЯ СХВАТИЛИ)
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= LocalPlayer and otherPlayer.Character then
+            for _, v in pairs(otherPlayer.Character:GetDescendants()) do
+                if v:IsA("Weld") or v:IsA("WeldConstraint") or v:IsA("AlignPosition") then
+                    local p1 = v.Part1 or v.Attachment1
+                    -- Если чужой сустав прикреплен к частям моего тела
+                    if p1 and p1:IsDescendantOf(char) then
+                        return true, "Меня схватили"
+                    end
+                end
+            end
+        end
+    end
+
     return false, ""
 end
 
@@ -697,15 +739,17 @@ RunService.RenderStepped:Connect(function()
         radiusVisual.Transparency = 1
     end
 
-    isGrabbingTarget, grabReason = isGrabbing()
+    -- Проверка захвата (с новой логикой)
+    isGrabbingTarget, grabReason = isInvolvedInGrab()
     if isGrabbingTarget then
-        statusLabel.Text = "Статус: Захват [" .. grabReason .. "] (Аим выкл)"
+        statusLabel.Text = "Статус: " .. grabReason .. " (Аим выкл)"
         statusLabel.TextColor3 = THEME.Red
     else
         statusLabel.Text = "Статус: Ожидание..."
         statusLabel.TextColor3 = THEME.SubText
     end
 
+    -- Аимбот
     if aimbotEnabled and not isGrabbingTarget and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local myPos = LocalPlayer.Character.HumanoidRootPart.Position
         local closest = nil
@@ -763,43 +807,78 @@ local function playCloseAnimation()
     end)
 end
 
--- ==================== 5. ЛОГИКА ИНТРО ====================
+-- ==================== 5. НОВАЯ ЛОГИКА ИНТРО (КИНЕМАТОГРАФИЧНАЯ) ====================
 local function runIntro()
     pcall(function() loadSound:Play() end)
     task.wait(0.5)
     
-    -- 1. Размытие и затемнение
-    TweenService:Create(blur, TweenInfo.new(1, Enum.EasingStyle.Quad), { Size = 24 }):Play()
-    TweenService:Create(introBg, TweenInfo.new(1, Enum.EasingStyle.Quad), { BackgroundTransparency = 0.4 }):Play()
-    task.wait(0.5)
-    
-    -- 2. Плавное появление логотипа
-    TweenService:Create(logo, TweenInfo.new(1.2, Enum.EasingStyle.Quad), { TextTransparency = 0 }):Play()
-    TweenService:Create(logoStroke, TweenInfo.new(1.2, Enum.EasingStyle.Quad), { Transparency = 0 }):Play()
-    task.wait(1.5)
-    
-    -- 3. Текст уезжает вверх, а полоса загрузки появляется на ЕГО МЕСТЕ (по центру)
-    TweenService:Create(logo, TweenInfo.new(0.8, Enum.EasingStyle.Quad), { Position = UDim2.new(0.5, 0, 0.42, 0) }):Play()
-    TweenService:Create(loadBg, TweenInfo.new(0.8, Enum.EasingStyle.Quad), { 
-        BackgroundTransparency = 0.3, Size = UDim2.new(0, 200, 0, 4) 
-    }):Play()
+    -- 1. Размытие и затемнение (быстро)
+    TweenService:Create(blur, TweenInfo.new(0.8, Enum.EasingStyle.Quad), { Size = 24 }):Play()
+    TweenService:Create(introBg, TweenInfo.new(0.8, Enum.EasingStyle.Quad), { BackgroundTransparency = 0.2 }):Play()
     task.wait(0.8)
     
-    -- 4. Заполнение полосы
-    TweenService:Create(loadFill, TweenInfo.new(2, Enum.EasingStyle.Linear), { Size = UDim2.new(1, 0, 1, 0) }):Play()
-    task.wait(2.2)
+    -- 2. Резкое появление логотипа (Glitch effect)
+    logo.Position = UDim2.new(0.5, math.random(-10,10), 0.5, math.random(-10,10))
+    TweenService:Create(logo, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { TextTransparency = 0 }):Play()
+    TweenService:Create(logoStroke, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { Transparency = 0 }):Play()
     
-    -- 5. Плавное затухание
-    TweenService:Create(loadFill, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
-    TweenService:Create(loadBg, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
-    TweenService:Create(logo, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { TextTransparency = 1 }):Play()
-    TweenService:Create(logoStroke, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { Transparency = 1 }):Play()
-    TweenService:Create(introBg, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
-    TweenService:Create(blur, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { Size = 0 }):Play()
-    TweenService:Create(loadSound, TweenInfo.new(1.5, Enum.EasingStyle.Quad), { Volume = 0 }):Play()
-    task.wait(1.6)
+    -- Пульсация свечения
+    task.spawn(function()
+        while logo.TextTransparency > 0.1 do
+            TweenService:Create(logoStroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Thickness = 8 }):Play()
+            task.wait(0.5)
+            TweenService:Create(logoStroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Thickness = 3 }):Play()
+            task.wait(0.5)
+        end
+    end)
     
-    -- 6. Удаляем интро
+    task.wait(1.5)
+    
+    -- 3. Логотип отъезжает вверх, появляется полоса и проценты
+    TweenService:Create(logoContainer, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = UDim2.new(0.5, 0, 0.4, 0) }):Play()
+    TweenService:Create(loadBg, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 0, Size = UDim2.new(0, 250, 0, 6) }):Play()
+    TweenService:Create(percentText, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { TextTransparency = 0 }):Play()
+    task.wait(1)
+    
+    -- 4. Имитация загрузки с процентами
+    local progress = 0
+    local loadTime = 2.5
+    local startTime = tick()
+    
+    while progress < 100 do
+        local elapsed = tick() - startTime
+        progress = math.min(100, math.floor((elapsed / loadTime) * 100))
+        
+        -- Плавное заполнение полосы
+        TweenService:Create(loadFill, TweenInfo.new(0.1, Enum.EasingStyle.Linear), { Size = UDim2.new(progress / 100, 0, 1, 0) }):Play()
+        percentText.Text = progress .. "%"
+        
+        task.wait(0.05)
+    end
+    
+    -- 5. Финал загрузки: Вспышка!
+    percentText.Text = "100%"
+    flashFrame.BackgroundTransparency = 0.5
+    TweenService:Create(flashFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+    
+    -- Эффект "взрыва" текста
+    TweenService:Create(logo, TweenInfo.new(0.3, Enum.EasingStyle.Back), { TextTransparency = 1, Size = UDim2.new(1.2, 0, 1.2, 0) }):Play()
+    TweenService:Create(logoStroke, TweenInfo.new(0.3, Enum.EasingStyle.Back), { Transparency = 1 }):Play()
+    
+    TweenService:Create(loadBg, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(loadFill, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(percentText, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { TextTransparency = 1 }):Play()
+    
+    task.wait(0.5)
+    
+    -- 6. Плавное исчезновение фона и размытия
+    TweenService:Create(introBg, TweenInfo.new(1, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(blur, TweenInfo.new(1, Enum.EasingStyle.Quad), { Size = 0 }):Play()
+    TweenService:Create(loadSound, TweenInfo.new(1, Enum.EasingStyle.Quad), { Volume = 0 }):Play()
+    
+    task.wait(1)
+    
+    -- 7. Удаляем интро и запускаем меню
     introGui:Destroy()
     loadSound:Destroy()
     playOpenAnimation()
@@ -826,4 +905,4 @@ end)
 -- ==================== ЗАПУСК ====================
 task.spawn(runIntro)
 
-print("[Charli_Skrippt] FTAP FINAL Edition loaded. Claw Font & Fixed Loading Bar.")
+print("[Charli_Skrippt] FTAP FINAL Edition loaded. Grab Check V2 & Cinematic Intro.")
